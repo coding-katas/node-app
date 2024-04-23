@@ -1,0 +1,37 @@
+# write deployment k8s object for gcp gke for an image in artifact registry
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app
+  labels:
+    app: node-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: node-app
+  template:
+    metadata:
+      labels:
+        app: node-app
+    spec:
+      containers:
+      - name: node-app
+        image: europe-docker.pkg.dev/project-duet-2/cloud-sofre-1/node-app:v1
+
+
+---
+# write service k8s object for gcp gke for an image in artifact registry
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-app
+spec:
+  selector:
+    app: node-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+

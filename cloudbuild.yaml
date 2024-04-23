@@ -1,0 +1,27 @@
+# gcp cloud build steps to build node-app a docker images (for latest, commit sha and tag) for $PROJECT_ID
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'europe-docker.pkg.dev/$PROJECT_ID/cloud-sofre-1/node-app:v1', '.']
+  id: 'build-image-node-app'
+  waitFor: ['-']  # The '-' indicates that this step begins immediately.
+
+#gcp cloud build steps to push node-app a docker image to $PROJECT_ID
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'europe-docker.pkg.dev/$PROJECT_ID/cloud-sofre-1/node-app:v1']
+  id: 'push-image-node-app'
+  waitFor: ['build-image-node-app']  # The 'build-image-node-app' indicates that this step waits for the completion of the build-image-node-app step.
+  
+#gcp cloud build steps to deploy node-app a docker image to cloud run
+#- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#  entrypoint: gcloud
+#  args: ['run', 'deploy', 'node-app', '--image=europe-docker.pkg.dev/$PROJECT_ID/cloud-sofre-1/node-app:v1', '--region=europe-west1', '--allow-unauthenticated']
+#  id: 'deploy-image-node-app'
+#  waitFor: ['push-image-node-app']  # The 'push-image-node-app' indicates that this step waits for the completion of the push-image-node-app step.
+
+
+#deploy container image to GKE
+- name: 'gcr.io/cloud-builders/gke-deploy'
+  args: ['--filename=k8s.yaml', 'run', '--location=us-central1', '--cluster=test']
+  id: 'deploy-image-node-app'
+  waitFor: ['push-image-node-app']  # The 'deploy-image-node-app' indicates that this step waits for the completion of the push-image-node-app step.
+
